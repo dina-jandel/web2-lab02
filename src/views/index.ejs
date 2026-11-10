@@ -5,29 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
-<body>
+<body style="font-family: Verdana, Geneva, Tahoma, sans-serif; justify-items: center; text-align: center; margin-top: 100px; background-color: #f2c2ff;">
     <h1> Dobrodošli u ranjivu aplikaciju </h1>
 
     <p>Prijavljen kao <b><%= user.username %></b> (<%= user.role %>)</p>
     <form action="/odjava" method="POST">
         <button>Odjava</button>
     </form>
+    <br><br>
 
-    <form action="/onemoguciXss" method="POST">
-        <label>
-            <input type="checkbox" name="xssCheckbox" value="1"
-                <%= xssOnemogucen ? "checked" : "" %>
-                onchange="this.form.submit()">
-            Onemogući ranjivost na XSS napad
-        </label>
+    <form action="/postavke" method="POST">
+    <label>
+        <input type="checkbox" name="xssCheckbox" value="1"
+            <%= xssOnemogucen ? "checked" : "" %>
+            onchange="this.form.submit()">
+        Onemogući ranjivost na XSS napad
+    </label>
+    <br>
+    <label>
+        <input type="checkbox" name="backCheckbox" value="1"
+            <%= brokenAccessControlOnemogucen ? "checked" : "" %>
+            onchange="this.form.submit()">
+        Onemogući ranjivost Broken Access Control
+    </label>
     </form>
-    <p>Način: <b><%= xssOnemogucen ? "SIGURAN" : "RANJIV" %></b></p>
+
+    <p>XSS: <b><%= xssOnemogucen ? "SIGURAN" : "RANJIV" %></b></p>
+    <p>Broken Access Control: <b><%= brokenAccessControlOnemogucen ? "SIGURAN" : "RANJIV" %></b></p>
+
+
 
     <p> Upišite URL svoje najdraže fotografije koju želite dodati u globalnu galeriju: </p>
     <form action="/add-photo" method="POST">
         <input type="text" name="urlInput" placeholder="Unesite URL ovdje">
         <button type="submit">Dodaj fotografiju</button>
     </form>
+
+    <br><br>
 
     <% galerija.forEach(function (slika) { %>
         <div>

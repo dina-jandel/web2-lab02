@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
-<body>
+<body style="font-family: Verdana, Geneva, Tahoma, sans-serif; justify-items: center; text-align: center; margin-top: 100px; background-color: #f2c2ff;">
     <form action="/prijaviSe" method="POST">
         <label for="username">Korisničko ime:</label>
         <input type="text" id="username" name="username" required><br><br>
@@ -15,5 +15,28 @@
 
         <button type="submit">Prijava</button>
     </form>
+
+    <br>
+    <br>
+
+    <form action="/postavke" method="POST">
+    <label>
+        <input type="checkbox" name="xssCheckbox" value="1"
+            <%= xssOnemogucen ? "checked" : "" %>
+            onchange="this.form.submit()">
+        Onemogući ranjivost na XSS napad
+    </label>
+    <br><br>
+    <label>
+        <input type="checkbox" name="backCheckbox" value="1"
+            <%= brokenAccessControlOnemogucen ? "checked" : "" %>
+            onchange="this.form.submit()">
+        Onemogući ranjivost Broken Access Control
+    </label>
+    </form>
+    <br><br>
+    <p>XSS: <b><%= xssOnemogucen ? "SIGURAN" : "RANJIV" %></b></p>
+    <p>Broken Access Control: <b><%= brokenAccessControlOnemogucen ? "SIGURAN" : "RANJIV" %></b></p>
+    
 </body>
 </html>

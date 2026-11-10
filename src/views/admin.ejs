@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body style="font-family: Verdana, Geneva, Tahoma, sans-serif; justify-items: center; text-align: center; margin-top: 100px; background-color: #f2c2ff;">
+
+    <form action="/postavke" method="POST">
+    <label>
+        <input type="checkbox" name="xssCheckbox" value="1"
+            <%= xssOnemogucen ? "checked" : "" %>
+            onchange="this.form.submit()">
+        Onemogući ranjivost na XSS napad
+    </label>
+    <br>
+    <label>
+        <input type="checkbox" name="backCheckbox" value="1"
+            <%= brokenAccessControlOnemogucen ? "checked" : "" %>
+            onchange="this.form.submit()">
+        Onemogući ranjivost Broken Access Control
+    </label>
+    </form>
+
+    <p>XSS: <b><%= xssOnemogucen ? "SIGURAN" : "RANJIV" %></b></p>
+    <p>Broken Access Control: <b><%= brokenAccessControlOnemogucen ? "SIGURAN" : "RANJIV" %></b></p>
+
+
+    <form action="/odjava" method="POST">
+        <button>Odjava</button>
+    </form>
+
+    <br><br>
+
+
+    Ovo je <span style="color:red"> sučelje administratora </span> i sadrži sve lozinke korisnika iz baze:
+    <p style="color:red"> parovi korisničko ime-lozinka:</p>
+    <% korisnici.forEach(function (korisnik) { %>
+        <div>
+            <p><%= korisnik.username %> - <%= korisnik.password %></p>
+        </div>  
+    <% }) %>
+
+    
+</body>
+</html>

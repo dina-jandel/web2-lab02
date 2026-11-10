@@ -10,6 +10,7 @@ import { userInfo } from "os";
 declare module "express-session" {
     interface SessionData {
         xssOnemogucen: boolean;
+        brokenAccessControlOnemogucen: boolean;
         user: {id: number; username: string; role: string};
     }
 }
@@ -37,18 +38,36 @@ app.use(cookieParser());
 
 
 
+
 app.get("/", async (req, res) => {
   if (!req.session.user) {
-    res.render("prijava");
-  } else {
-    const result = await pool.query("SELECT * FROM gallery ORDER BY id DESC");
-    res.render("index", { 
-        galerija: result.rows,
+    res.render("prijava", {
         xssOnemogucen: req.session.xssOnemogucen ?? false,
-        user: req.session.user
+        brokenAccessControlOnemogucen: req.session.brokenAccessControlOnemogucen ?? false
     });
+  } else {
+    if (req.session.user.role === "admin") {
+        const result = await pool.query("SELECT * FROM users");
+        res.render("admin", { 
+            korisnici: result.rows,
+            user: req.session.user,
+            xssOnemogucen: req.session.xssOnemogucen ?? false,
+            brokenAccessControlOnemogucen: req.session.brokenAccessControlOnemogucen ?? false
+        });
+    } else {
+        const result = await pool.query("SELECT * FROM gallery ORDER BY id DESC");
+            res.render("index", { 
+            galerija: result.rows,
+            xssOnemogucen: req.session.xssOnemogucen ?? false,
+            brokenAccessControlOnemogucen: req.session.brokenAccessControlOnemogucen ?? false,
+            user: req.session.user
+        });
+    }
+    
   }
 });
+
+
 
 
 app.post("/prijaviSe", async (req, res) => {
@@ -66,6 +85,9 @@ app.post("/prijaviSe", async (req, res) => {
 });
 
 
+
+
+
 app.post("/odjava", async (req, res) => {
   req.session.destroy(() => {
     res.clearCookie("connect.sid");
@@ -75,28 +97,29 @@ app.post("/odjava", async (req, res) => {
 
 
 
-app.post("/onemoguciXss", async (req, res) => {
-  if (!req.session.user) {
-    res.redirect("/");
 
-  } else {
-    const xssOnemogucen = req.body.xssCheckbox==="1"; // ako je 1 onemogucen je XSS 
-    const user=req.session.user;
 
-    req.session.regenerate((err) => {
-        if (err) {
-        console.error("Greška prilikom regeneracije sesije:", err);
-        return res.status(500).send("Greška prilikom obrade zahteva.");
-        }
+// kad se klikne na neki od checkboxa za "paljenje/gašenje" ranjivosti
+app.post("/postavke", (req, res) => {
+  const xssOnemogucen = req.body.xssCheckbox === "1";
+  const backOnemogucen = req.body.backCheckbox === "1";
+  const user = req.session.user; // undefined ako nije prijavljen
 
-        req.session.user = user;
-        req.session.cookie.httpOnly = xssOnemogucen;
-        req.session.xssOnemogucen = xssOnemogucen;
-        req.session.save(() => res.redirect("/"));
-    });
-  }
-  
+  req.session.regenerate((err) => {
+    if (err) {
+      console.error("Greška prilikom regeneracije sesije:", err);
+      return res.status(500).send("Greška prilikom obrade zahtjeva.");
+    }
+
+    if (user) req.session.user = user;
+    req.session.xssOnemogucen = xssOnemogucen;
+    req.session.brokenAccessControlOnemogucen = backOnemogucen;
+    req.session.cookie.httpOnly = xssOnemogucen;
+    req.session.save(() => res.redirect("/"));
+  });
 });
+
+
 
 
 app.post("/add-photo", async (req, res) => {
@@ -107,8 +130,32 @@ app.post("/add-photo", async (req, res) => {
     await pool.query("INSERT INTO gallery (link) VALUES ($1)", [link]);
     res.redirect("/");
   }
-  
-  
+});
+
+
+
+
+app.get("/admin", async (req, res) => {
+    if (req.session.brokenAccessControlOnemogucen) {
+        if (!req.session.user || req.session.user.role !== "admin") {
+            res.status(403).send("Pristup zabranjen.");
+        } else {
+            const result = await pool.query("SELECT * FROM users");
+            res.render("admin", { 
+                korisnici: result.rows,
+                user: req.session.user,
+                xssOnemogucen: req.session.xssOnemogucen ?? false,
+                brokenAccessControlOnemogucen: req.session.brokenAccessControlOnemogucen ?? false
+            });
+        }
+    } else {
+        const result = await pool.query("SELECT * FROM users");
+        res.render("admin", { 
+            korisnici: result.rows,
+            xssOnemogucen: req.session.xssOnemogucen ?? false,
+            brokenAccessControlOnemogucen: req.session.brokenAccessControlOnemogucen ?? false
+        });
+    }
 });
 
 await initDb();
