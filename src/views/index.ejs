@@ -6,6 +6,41 @@
     <title>Document</title>
 </head>
 <body>
-    <h1> Hello, world! </h1>
+    <h1> Dobrodošli u ranjivu aplikaciju </h1>
+
+    <p>Prijavljen kao <b><%= user.username %></b> (<%= user.role %>)</p>
+    <form action="/odjava" method="POST">
+        <button>Odjava</button>
+    </form>
+
+    <form action="/onemoguciXss" method="POST">
+        <label>
+            <input type="checkbox" name="xssCheckbox" value="1"
+                <%= xssOnemogucen ? "checked" : "" %>
+                onchange="this.form.submit()">
+            Onemogući ranjivost na XSS napad
+        </label>
+    </form>
+    <p>Način: <b><%= xssOnemogucen ? "SIGURAN" : "RANJIV" %></b></p>
+
+    <p> Upišite URL svoje najdraže fotografije koju želite dodati u globalnu galeriju: </p>
+    <form action="/add-photo" method="POST">
+        <input type="text" name="urlInput" placeholder="Unesite URL ovdje">
+        <button type="submit">Dodaj fotografiju</button>
+    </form>
+
+    <% galerija.forEach(function (slika) { %>
+        <div>
+            <% if (xssOnemogucen) { %>
+                <img src="<%= slika.link %>" alt="Slika" style="max-width: 300px; max-height: 300px;">
+            <% } else { %>
+                <img src="<%- slika.link %>" alt="Slika" style="max-width: 300px; max-height: 300px;">
+            <% } %>
+        </div>
+    <% }) %>
+
+    
 </body>
 </html>
+
+
