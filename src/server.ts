@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import path from "path";
 import cookieParser from "cookie-parser";
@@ -5,6 +6,15 @@ import { pool, initDb } from "./db.js";
 import session from 'express-session';
 import { userInfo } from "os";
 
+
+
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Nedostaje environment varijabla: ${name}`);
+  }
+  return value;
+}
 
 
 declare module "express-session" {
@@ -24,12 +34,12 @@ app.set("view engine", "ejs");
 app.set("views", path.join(import.meta.dirname, "views"));
 
 app.use(session({
-    secret: 'tajna_sifra',
+    secret: requireEnv("SECRET"),
     resave: false,
     saveUninitialized: true,
     cookie: { httpOnly: false, sameSite: "lax"},
-}));
-
+    })
+);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -138,7 +148,8 @@ app.post("/add-photo", async (req, res) => {
 app.get("/admin", async (req, res) => {
     if (req.session.brokenAccessControlOnemogucen) {
         if (!req.session.user || req.session.user.role !== "admin") {
-            res.status(403).send("Pristup zabranjen.");
+            //res.status(403).send("Pristup zabranjen.");
+            res.redirect("/");
         } else {
             const result = await pool.query("SELECT * FROM users");
             res.render("admin", { 
