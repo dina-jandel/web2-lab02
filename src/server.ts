@@ -31,7 +31,7 @@ const app = express();
 
 app.set("trust proxy", 1);
 app.set("view engine", "ejs");
-app.set("views", path.join(import.meta.dirname, "views"));
+app.set("views", path.join(process.cwd(), "views"));
 
 app.use(session({
     secret: requireEnv("SECRET"),
