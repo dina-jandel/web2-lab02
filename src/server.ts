@@ -49,6 +49,8 @@ app.use(cookieParser());
 
 
 
+
+
 app.get("/", async (req, res) => {
   if (!req.session.user) {
     res.render("prijava", {
@@ -78,6 +80,13 @@ app.get("/", async (req, res) => {
 });
 
 
+
+app.post("/obrisi-galeriju", async (req, res) => {
+  if (req.session.user) {
+    await pool.query("DELETE FROM gallery");
+  }
+  res.redirect("/");
+});
 
 
 app.post("/prijaviSe", async (req, res) => {
